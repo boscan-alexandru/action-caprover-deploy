@@ -48,7 +48,7 @@ runs:
         export REGISTRY_URL="ghcr.io"
         export COMMIT_HASH=$GITHUB_SHA
         export IMAGE_NAME_WITH_REGISTRY_PREFIX=$REGISTRY_URL/$REPO
-        docker login -u "$REGISTRY_USER" -p "$REGISTRY_PASSWORD" $REGISTRY_URL
+        echo "$REGISTRY_PASSWORD" | docker login -u "$REGISTRY_USER" --password-stdin $REGISTRY_URL
         echo "Building..."
         export CONTAINER_FULL_IMAGE_NAME_WITH_TAG=$IMAGE_NAME_WITH_REGISTRY_PREFIX:$COMMIT_HASH
         docker build -t "${{ inputs.docker_image }}" --dockerfile "${{ inputs.dockerfile_path }}" .
