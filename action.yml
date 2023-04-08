@@ -7,18 +7,37 @@ branding:
   icon: upload-cloud
   color: gray-dark
 inputs:
-  token:
-    description: "GITHUB_TOKEN"
+  auth_used:
+    description: "Authentication method: password or token"
     required: true
-  server:
-    description: "Captain URL for your CapRover server."
-    required: true
-  password:
-    description: "Admin password for your CapRover server."
+  url:
+    description: "CapRover server URL"
     required: true
   app:
-    description: "Application name to deploy this repo to, must have been created."
+    description: "CapRover app name"
     required: true
+  email:
+    description: "Email for CapRover login (if using password auth)"
+    required: false
+  password:
+    description: "Password for CapRover login (if using password auth)"
+    required: false
+  app_token:
+    description: "App token for CapRover deploy (if using token auth)"
+    required: false
+  branch:
+    description: "GitHub branch to deploy"
+    required: true
+  token:
+    description: "GitHub token to access the container registry"
+    required: true
+  docker_image:
+    description: "Docker image name"
+    required: true
+  dockerfile_path:
+    description: "Path to the Dockerfile"
+    required: true
+
 runs:
   using: composite
   steps:
@@ -32,10 +51,10 @@ runs:
         docker login -u "$REGISTRY_USER" -p "$REGISTRY_PASSWORD" $REGISTRY_URL
         echo "Building..."
         export CONTAINER_FULL_IMAGE_NAME_WITH_TAG=$IMAGE_NAME_WITH_REGISTRY_PREFIX:$COMMIT_HASH
-        docker build -f .staging/Dockerfile --pull -t built-image-name .
-        docker tag built-image-name "$CONTAINER_FULL_IMAGE_NAME_WITH_TAG"
+        docker build -t "${{ inputs.docker_image }}" --dockerfile "${{ inputs.dockerfile_path }}" .
+        docker tag "${{ inputs.docker_image }}" "$CONTAINER_FULL_IMAGE_NAME_WITH_TAG"
         docker push "$CONTAINER_FULL_IMAGE_NAME_WITH_TAG"
         echo $CONTAINER_FULL_IMAGE_NAME_WITH_TAG
         echo "Deploying on CapRover..."
-        docker run caprover/cli-caprover:2.2.3 caprover deploy -u ${{inputs.server}} -p ${{inputs.password}} -a ${{inputs.app}} -i $CONTAINER_FULL_IMAGE_NAME_WITH_TAG
+        docker run caprover/cli-caprover:2.2.3 caprover deploy -u ${{inputs.url}} -p ${{inputs.password}} -a ${{inputs.app}} -i $CONTAINER_FULL_IMAGE_NAME_WITH_TAG
       shell: bash
