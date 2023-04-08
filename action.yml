@@ -37,6 +37,12 @@ inputs:
   dockerfile_path:
     description: "Path to the Dockerfile"
     required: true
+  registry_password:
+    description: "Path to the Dockerfile"
+    required: true
+  registry_username:
+    description: "Path to the Dockerfile"
+    required: true
 
 runs:
   using: composite
@@ -48,6 +54,7 @@ runs:
         export REGISTRY_URL="ghcr.io"
         export COMMIT_HASH=$GITHUB_SHA
         export IMAGE_NAME_WITH_REGISTRY_PREFIX=$REGISTRY_URL/$REPO
+        echo "${{ inputs.registry_password }}" | docker login -u "${{ inputs.registry_username }}" --password-stdin registry-hub.faiton.cc
         echo "$REGISTRY_PASSWORD" | docker login -u "$REGISTRY_USER" --password-stdin $REGISTRY_URL
         echo "Building..."
         export CONTAINER_FULL_IMAGE_NAME_WITH_TAG=$IMAGE_NAME_WITH_REGISTRY_PREFIX:$COMMIT_HASH
